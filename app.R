@@ -2,6 +2,7 @@ library(shiny)
 library(bslib)
 library(dplyr)
 library(ggplot2)
+library(yaml)
 
 ui <- page_fluid(
   theme = bs_theme(brand = TRUE),
