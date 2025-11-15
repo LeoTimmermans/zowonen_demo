@@ -1,0 +1,25 @@
+meta:
+  name: ZOwonen Brand
+  link: https://www.zowonen.com/
+
+logo: "www/logo-black.svg"  # Vervang door het juiste pad
+
+color:
+  palette:
+    white: "#FFFFFF"
+    black: "#000000"
+    yellow: "#FFD400"
+    red: "#E52050"
+  foreground: black
+  background: white
+  primary: red
+  brand: yellow
+  text: black
+
+typography:
+  fonts:
+    - family: Work Sans
+      source: google
+  base: Work Sans
+  heading: Work Sans
+  body: Work Sans
