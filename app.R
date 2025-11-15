@@ -143,7 +143,7 @@ ui <- page_fluid(
             numericInput(
               "opbrengst_zon",
               "Opbrengst zonnepanelen per woning (kWh/jaar):",
-              value = 2500,
+              value = 1200,
               min = 0
             ),
             hr(),
