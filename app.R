@@ -143,7 +143,7 @@ ui <- page_fluid(
             numericInput(
               "opbrengst_zon",
               "Opbrengst zonnepanelen per woning (kWh/jaar):",
-              value = 1200,
+              value = 2000,
               min = 0
             ),
             hr(),
@@ -174,9 +174,10 @@ ui <- page_fluid(
         mainPanel(
           h3("Resultaten"),
           tableOutput("result_table"),
+          h4("Exploitatiekosten Eigenaar"),
           plotOutput("cost_plot"),
-          plotOutput("payback_plot"),
-          textOutput("summary")
+          h4("Terugverdientijd Warmtepomp"),
+          plotOutput("payback_plot")
         )
       )
     ),
@@ -260,20 +261,30 @@ server <- function(input, output) {
 
   output$cost_plot <- renderPlot({
     vals <- calc_values()
-    costs <- c(vals$cv_total, vals$wp_total)
-    barplot(
-      costs,
-      names.arg = c("Cv-ketel", "Warmtepomp"),
-      col = c("#E52050", "#27B757"),
-      main = "Exploitatiekosten per jaar",
-      ylab = "Kosten (€)"
-    )
+    costs <- c(vals$cv_owner, vals$wp_owner)
+
+    ggplot(
+      data = data.frame(
+        Scenario = c("Cv-ketel", "Warmtepomp"),
+        Kosten = costs
+      ),
+      aes(x = Scenario, y = Kosten, fill = Scenario)
+    ) +
+      geom_bar(stat = "identity") +
+      scale_fill_manual(values = c("#E52050", "#27B757")) +
+      labs(
+        title = "Exploitatiekosten (eigenaar) per jaar",
+        y = "Kosten (€)",
+        x = ""
+      ) +
+      theme_minimal() +
+      theme(legend.position = "none")
   })
 
   output$payback_plot <- renderPlot({
     # definities opnieuw opnemen
-    gas_use <- 1200
-    elec_use <- 3500
+    gas_use <- input$verbruik_cv
+    elec_use <- input$verbruik_wp
 
     gas_cost <- input$n_woningen * gas_use * input$gasprijs
     elec_cost_base <- input$n_woningen *
@@ -300,19 +311,22 @@ server <- function(input, output) {
       ifelse(annual_savings > 0, invest_diff / annual_savings, NA)
     })
 
-    plot(
-      elec_prices,
-      paybacks,
-      type = "b",
-      lwd = 2,
-      xlab = "Elektriciteitsprijs €/kWh",
-      ylab = "Terugverdientijd (jaren)",
-      main = "Scenario terugverdientijd"
-    )
-  })
-
-  output$summary <- renderText({
-    "Bij huidige aannames is de warmtepomp na X jaar rendabel en stijgt de tevredenheidsscore."
+    ggplot(
+      data = data.frame(
+        Elekprijs = elec_prices,
+        Terugverdientijd = paybacks
+      ),
+      aes(x = Elekprijs, y = Terugverdientijd)
+    ) +
+      geom_line(linewidth = 1.2, color = "#27B757") +
+      geom_point(size = 2, color = "#27B757") +
+      labs(
+        title = "Scenario terugverdientijd obv totale kosten (eigenaar + huurder)",
+        x = "Elektriciteitsprijs €/kWh",
+        y = "Terugverdientijd (jaren)"
+      ) +
+      theme_minimal() +
+      ylim(0, max(paybacks, na.rm = TRUE) + 5)
   })
 }
 
